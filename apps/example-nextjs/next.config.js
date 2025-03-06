@@ -7,8 +7,50 @@
  *
  */
 
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 
 module.exports = {
   transpilePackages: ['@stylexjs/open-props'],
+  eslint: { ignoreDuringBuilds: true },
+  compiler: {
+    styledJsx: false,
+  },
+  webpack: (config, { dev, isServer }) => {
+    // StyleXのコンパイルが必要なファイルのみをbabel-loaderで処理する
+    config.module.rules.push({
+      test: /\.(tsx|stylex\.ts|jsx|stylex\.js)$/,
+      exclude: /node_modules(?!\/@stylexjs\/open-props)/,
+      use: [
+        {
+          loader: 'babel-loader',
+          options: {
+            parserOpts: {
+              plugins: ['typescript', 'jsx'],
+            },
+            plugins: [
+              [
+                '@stylexjs/babel-plugin',
+                {
+                  dev: dev,
+                  runtimeInjection: false,
+                  genConditionalClasses: true,
+                  treeshakeCompensation: true,
+                  aliases: {
+                    '@/*': [path.join(__dirname, '*')],
+                  },
+                  unstable_moduleResolution: {
+                    type: 'commonJS',
+                  },
+                },
+              ],
+            ],
+          },
+        },
+      ],
+    });
+
+    return config;
+  },
 };
