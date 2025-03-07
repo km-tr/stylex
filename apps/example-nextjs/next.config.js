@@ -51,6 +51,12 @@ module.exports = {
       ],
     });
 
+    // Configure to prioritize local node_modules for resolution
+    config.resolve.modules = [
+      path.join(__dirname, 'node_modules'),
+      'node_modules',
+    ];
+
     return config;
   },
 };
